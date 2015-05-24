@@ -1,4 +1,5 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render, resolve_url
 
@@ -16,6 +17,7 @@ from django.contrib.auth import (
     login as auth_login,
     logout as auth_logout,
 )
+from django.contrib.auth.views import login as view_login
 
 from .models import Question, Choice
 
@@ -41,6 +43,7 @@ from .models import Question, Choice
 from mysite import settings
 
 
+#@login_required(login_url='login')
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'
@@ -60,6 +63,7 @@ class ResultsView(generic.DetailView):
     template_name = 'polls/results.html'
 
 
+@login_required(login_url='polls:login')
 def vote(request, question_id):
     #return HttpResponse("You're voting on question %s." % question_id)
     p = get_object_or_404(Question, pk=question_id)
@@ -97,6 +101,13 @@ def register(request):
 
 
 def login(request):
+    redirect_field_name = REDIRECT_FIELD_NAME
+    redirect_to = request.POST.get(redirect_field_name,
+                                   request.GET.get(redirect_field_name, ''))
+    #request.GET['action_name'] = 'Login'
+    return view_login(request, template_name='registration/login.html')
+
+
     user = request.user
     if user.is_authenticated():
         return render_to_response("registration/login_success.html",
@@ -128,7 +139,7 @@ def logout(request):
 @csrf_protect
 @never_cache
 def login22(request, template_name='registration/login2.html',
-          redirect_field_name='registration/login_success.html',
+          redirect_field_name='next',
           authentication_form=AuthenticationForm,
           current_app=None, extra_context=None):
     """

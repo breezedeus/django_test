@@ -102,4 +102,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = 'polls'
+LOGIN_REDIRECT_URL = '/polls/login_success'
